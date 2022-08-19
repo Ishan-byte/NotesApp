@@ -3,50 +3,30 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from .models import Note
 from .serializers import NoteSerializer
-
+from .utils import getAllNotes, createNote, getNoteDetail, updateNote, deleteNote
 
 # get all notes
-@api_view(['GET'])
+@api_view(['GET', 'POST'])
 def getNotes(request):
-    notes = Note.objects.all()
-    serialized_notes = NoteSerializer(notes, many = True)
-    return Response(serialized_notes.data)
+    if request.method  == 'GET': 
+        return getAllNotes(request)
+
+    if request.method  == 'POST': 
+        return createNote(request)
 
 
-# gets a single note via note ID
-@api_view(['GET'])
+# single note operations
+@api_view(['GET', 'PUT', 'DELETE'])
 def getNote(request, pk):
-    note = Note.objects.get(id = pk)
-    serialized_note = NoteSerializer(note, many = False)
-    return Response(serialized_note.data)
 
+    # gets a single note via note ID
+    if request.method == 'GET':
+        return getNoteDetail(request, pk)
 
-# creates a new note
-@api_view(['POST'])
-def createNote(request):
-    data = request.data
-    note = Note.objects.create(
-        body = data['body']
-    )
-    serialized_note = NoteSerializer(note, many = False)
-    return Response(serialized_note.data)
+    # updates a specific note
+    if request.method == 'PUT':
+        return updateNote(request, pk)
 
-
-# updates a specific note
-@api_view(['PUT'])
-def updateNote(request, pk):
-    data = request.data
-    note = Note.objects.get(id = pk)
-    serialized_note = NoteSerializer(instance=note, data = data)
-
-    if serialized_note.is_valid():
-        serialized_note.save()
-
-    return Response(serialized_note.data)
-
-# deletes a specific note
-@api_view(['DELETE'])
-def deleteNote(request, pk):
-    note = Note.objects.get(id =  pk)
-    note.delete() 
-    return Response("Note was Deleted!")
+    # deletes a specific note
+    if request.method == 'DELETE':
+        return deleteNote(request, pk)
